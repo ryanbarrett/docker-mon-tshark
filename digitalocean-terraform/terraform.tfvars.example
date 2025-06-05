@@ -1,0 +1,18 @@
+# DigitalOcean Configuration
+do_token           = "your-digitalocean-api-token-here"
+tailscale_auth_key = "your-tailscale-auth-key-here"
+ssh_public_key     = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQ... your-key-here"
+
+# Infrastructure Settings
+region       = "nyc3"
+droplet_size = "s-1vcpu-1gb"
+droplet_name = "my-vps"
+image        = "ubuntu-24-04-x64"
+environment  = "dev"
+
+# Security Settings
+allowed_ssh_ips = ["YOUR.IP.ADDRESS.HERE/32"]  # Replace with your IP
+enable_backups  = false
+
+# Tags
+tags = ["terraform", "vps", "my-project"]

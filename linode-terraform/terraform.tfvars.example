@@ -1,0 +1,21 @@
+# Linode Configuration
+linode_token       = "your-linode-api-token-here"
+tailscale_auth_key = "your-tailscale-auth-key-here"
+ssh_public_key     = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQ... your-key-here"
+
+# Infrastructure Settings
+region        = "us-east"
+instance_type = "g6-standard-1"
+instance_label = "my-vps"
+image         = "linode/ubuntu24.04"
+environment   = "dev"
+
+# Security Settings
+allowed_ssh_ips = ["YOUR.IP.ADDRESS.HERE/32"]  # Replace with your IP
+
+# Tags
+tags = {
+  "project"    = "my-project"
+  "owner"      = "your-name"
+  "managed-by" = "terraform"
+}
