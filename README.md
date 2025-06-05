@@ -56,20 +56,23 @@ Monitoring Output
 ```bash
 # SSH to your VPS (IP from terraform output)
 ssh deploy@<VPS_IP>
+# Remote container monitoring
+scp monitor.bash deploy@<VPS_IP>:~/
+ssh deploy@<VPS_IP> "sudo ./monitor.bash nginx:latest"  
 
-# Basic container monitoring
-sudo ./monitor.bash nginx:latest
 
-# With docker run arguments
-sudo ./monitor.bash --name nginx_container -p 80:80 nginx:latest
-sudo ./monitor.bash -e C2_SERVER=evil.com fakin-beacon
+# Remote With docker run arguments
+ssh deploy@<VPS_IP> "sudo ./monitor.bash --name nginx_container -p 80:80 nginx:latest"
+
 
 # With timeout (recommended for testing)
-timeout 120 sudo ./monitor.bash nginx:latest
-timeout 60 sudo ./monitor.bash --name test_nginx -p 8080:80 nginx:latest
+ssh deploy@<VPS_IP> "timeout 120 sudo ./monitor.bash nginx:latest"
+ssh deploy@<VPS_IP> "timeout 60 sudo ./monitor.bash --name test_nginx -p 8080:80 nginx:latest"
 ```
 
 ### 3. Retrieve Results
+
+Retrieve results from the VPS to your local machine
 
 ```bash
 # specify VPS IP manually
@@ -79,12 +82,10 @@ timeout 60 sudo ./monitor.bash --name test_nginx -p 8080:80 nginx:latest
 ### 4. Test with C2 Simulation
 
 ```bash
-# Build the C2 beacon container
-cd fakin-beacon
-docker build -t fakin-beacon .
-
-# Monitor the beacon traffic
-sudo ../monitor.bash fakin-beacon
+# Remote With docker run arguments and C2 simulation
+scp fakin-beacon/ deploy@<VPS_IP>:~/tmp
+ssh deploy@<VPS_IP> "cd ~/tmp && docker build -t fakin-beacon . && rm -rf ~/tmp"
+ssh deploy@<VPS_IP> "sudo ./monitor.bash -e C2_SERVER=evil.com fakin-beacon"
 ```
 
 ## 📁 Directory Structure
