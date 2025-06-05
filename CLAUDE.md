@@ -15,7 +15,14 @@ This repository contains Terraform infrastructure code for deploying secure, Doc
 - Unified deployment management via `tf-manager.sh`
 - Quick infrastructure cleanup via `destroy.sh`
 
-**🎯 Next Phase:** Docker container deployment and network monitoring testing
+**✅ Phase 2 Complete:** Production container monitoring system
+- `monitor.bash` production monitoring script with docker args support
+- Automatic environment detection and tshark installation
+- Container lifecycle management and network traffic capture
+- `fakin-beacon` C2 simulation container for testing
+- `retrieve.bash` for downloading monitoring results
+
+**🎯 Next Phase:** Scalable analysis and Kasm workspace integration
 
 ## Management Scripts
 
@@ -100,13 +107,56 @@ terraform validate
 ```
 
 #### monitor.bash
-monitor.bash is the production script for monitoring Docker container network traffic using tshark. It is a more advanced version of poc.bash and is recommended for production use. It should be able to detect when a container is started and stopped, and automatically start and stop tshark when the container is started and stopped.
+monitor.bash runs a Docker container and monitors its network traffic using tshark. It is a more advanced version of poc.bash and is recommended for production use. It automatically detects when containers are started and stopped, and manages tshark monitoring accordingly.
 
 ```bash
-./monitor.bash <container_name_or_id>
+# Basic container monitoring
+sudo ./monitor.bash nginx:latest
+
+# With docker run arguments (NEW)
+sudo ./monitor.bash --name nginx_container -p 80:80 nginx:latest
+sudo ./monitor.bash -e C2_SERVER=evil.com fakin-beacon
+sudo ./monitor.bash -v /data:/app/data --restart unless-stopped redis:alpine
+
+# With timeout (recommended for testing)
+timeout 60 sudo ./monitor.bash fakin-beacon
+timeout 90 sudo ./monitor.bash --name test_nginx -p 8080:80 nginx:latest
 ```
-It should output the pcap file to the outbound directory. include the container name, image version, and timestamp in the filename. Include a json file containing the inspect output of the container in the same directory. The json file should be named the same as the pcap file, but with a .json extension.
-It should have the ability to accept any number of image names as arguments. It should deploy a container, and monitor with tshark, for each image name provided.
+
+**Features:**
+- Automatic environment detection (Docker, Tailscale, tshark)
+- Auto-install tshark if missing
+- **NEW:** Support for all docker run arguments (ports, environment, volumes, etc.)
+- Deploy containers from image names with predictable naming
+- Background network monitoring with tshark
+- Structured output with timestamps
+- Automatic container lifecycle management
+
+**Usage Pattern:**
+All arguments are passed directly to `docker run -d`. The image name should be the last argument that doesn't start with a dash (-).
+
+**Output:**
+- PCAP files: `outbound/<container>_<image>_<timestamp>.pcap`
+- JSON files: `outbound/<container>_<image>_<timestamp>.json` (container inspect data)
+- Log file: `outbound/monitor.log`
+
+#### retrieve.bash
+retrieve.bash downloads monitoring output from the VPS to local machine, fixing permissions and organizing files by session.
+
+```bash
+# Auto-detect VPS IP from terraform
+./retrieve.bash
+
+# Use specific VPS IP
+./retrieve.bash 45.79.190.149
+```
+
+**Features:**
+- Auto-detects VPS IP from terraform output
+- Fixes remote file permissions automatically
+- Downloads to `~/docker-mon-output/session_TIMESTAMP/`
+- Shows file summary and sizes
+- Optional remote cleanup after download
 
 
 ## Required Variables
@@ -146,10 +196,13 @@ Both provider configurations require these sensitive variables in `terraform.tfv
 
 ## Phase 2 Goals
 
-- [ ] Deploy a test Docker container on chosen VPS via `monitor.bash`
-- [ ] Test and validate the `monitor.bash` network monitoring script
-- [ ] Verify tshark can capture container network traffic
-- [ ] deploy a list of docker containers on the chosen VPS via `monitor.bash`
+- [x] Deploy a test Docker container on chosen VPS via `monitor.bash`
+- [x] Test and validate the `monitor.bash` network monitoring script
+- [x] Verify tshark can capture container network traffic
+- [x] Fix container lifecycle issues in monitoring script
+- [x] Add support for docker run arguments (ports, environment, volumes, etc.)
+- [x] Create fakin-beacon C2 simulation container for testing
+- [x] Test realistic network traffic capture with fakin-beacon
 
 ## Phase 3 Goals
 
